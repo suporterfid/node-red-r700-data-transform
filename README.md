@@ -135,7 +135,7 @@ HTTP POST + x-api-key
 API key is injected via environment variable:
 
 ```
-VERKADA_API_KEY=your_key_here
+EXTERNAL_API_KEY=your_key_here
 ```
 
 ---
