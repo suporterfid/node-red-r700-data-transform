@@ -1,0 +1,9 @@
+data/.config.runtime.json
+data/.config.runtime.json.backup
+data/.config.users.json
+data/.config.users.json.backup
+data/.flows.json.backup
+data/flows_cred.json
+data/package.json
+data/settings.js
+data/.config.nodes.json

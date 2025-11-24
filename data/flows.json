@@ -1,190 +1,199 @@
 [
-  {
-    "id": "http_in_r700",
-    "type": "http in",
-    "z": "flow1",
-    "name": "R700 Webhook In",
-    "url": "/impinj",
-    "method": "post",
-    "upload": false,
-    "swaggerDoc": "",
-    "x": 150,
-    "y": 120,
-    "wires": [
-      [
-        "extract_body"
-      ]
-    ]
-  },
-  {
-    "id": "extract_body",
-    "type": "change",
-    "z": "flow1",
-    "name": "msg.payload = req.body",
-    "rules": [
-      {
-        "t": "set",
-        "p": "payload",
-        "pt": "msg",
-        "to": "req.body",
-        "tot": "msg"
-      }
-    ],
-    "x": 380,
-    "y": 120,
-    "wires": [
-      [
-        "split_events"
-      ]
-    ]
-  },
-  {
-    "id": "split_events",
-    "type": "split",
-    "z": "flow1",
-    "name": "Split array of events",
-    "splt": "1",
-    "spltType": "len",
-    "arraySplt": 1,
-    "stream": false,
-    "addname": "",
-    "x": 620,
-    "y": 120,
-    "wires": [
-      [
-        "process_event"
-      ]
-    ]
-  },
-  {
-    "id": "process_event",
-    "type": "function",
-    "z": "flow1",
-    "name": "Transform → 3rd Party Payload",
-    "func": "// Extract fields\nlet event = msg.payload;\n\n// Time selection\nlet isoTime = event?.tagInventoryEvent?.lastSeenTime || event?.timestamp || new Date().toISOString();\nlet timeMs = Date.parse(isoTime);\nif (isNaN(timeMs)) timeMs = Date.now();\n\n// Construct payload exactly as required\nmsg.payload = {\n    attributes: {\n        time: isoTime\n    },\n    event_type_uid: \"ed857b63-e1ef-4aa5-911e-c453408708e4\",\n    camera_id: event.hostname,   // Reader hostname\n    time_ms: timeMs\n};\n\n// Prepare headers\nmsg.headers = {\n    \"content-type\": \"application/json\",\n    \"x-api-auth\": process.env.EXTERNAL_API_KEY  // Must be set in Node-RED env\n};\n\n// Store retry count\nmsg.retry = msg.retry || 0;\nreturn msg;",
-    "outputs": 1,
-    "noerr": 0,
-    "x": 930,
-    "y": 120,
-    "wires": [
-      [
-        "post_verkada"
-      ]
-    ]
-  },
-  {
-    "id": "post_verkada",
-    "type": "http request",
-    "z": "flow1",
-    "name": "POST → 3rd Party API",
-    "method": "POST",
-    "ret": "obj",
-    "paytoqs": "ignore",
-    "url": "https://api.verkada.com/cameras/v1/video_tagging/event",
-    "tls": "",
-    "persist": false,
-    "proxy": "",
-    "authType": "",
-    "senderr": true,
-    "x": 1230,
-    "y": 120,
-    "wires": [
-      [
-        "log_success",
-        "send_r700_ok"
-      ]
-    ]
-  },
-  {
-    "id": "log_success",
-    "type": "debug",
-    "z": "flow1",
-    "name": "Success → Debug",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "true",
-    "x": 1500,
-    "y": 60,
-    "wires": []
-  },
-  {
-    "id": "send_r700_ok",
-    "type": "http response",
-    "z": "flow1",
-    "name": "Ack to R700 (200)",
-    "statusCode": "",
-    "headers": {},
-    "x": 1520,
-    "y": 120,
-    "wires": []
-  },
-  {
-    "id": "catch_errors",
-    "type": "catch",
-    "z": "flow1",
-    "name": "Catch errors",
-    "scope": [
-      "post_verkada"
-    ],
-    "uncaught": false,
-    "x": 240,
-    "y": 260,
-    "wires": [
-      [
-        "retry_logic"
-      ]
-    ]
-  },
-  {
-    "id": "retry_logic",
-    "type": "function",
-    "z": "flow1",
-    "name": "Retry w/ exponential backoff",
-    "func": "let retry = msg.retry || 0;\nretry++;\n\nif (retry > 5) {\n    node.error(\"Retry limit exceeded\", msg);\n    return null; // Stop retrying\n}\n\nmsg.retry = retry;\n\nlet delay = Math.pow(2, retry) * 1000; // 2s, 4s, 8s, 16s, 32s\nmsg.delay = delay;\n\nnode.warn(`Retry #${retry} in ${delay}ms`);\nreturn msg;",
-    "outputs": 1,
-    "noerr": 0,
-    "x": 510,
-    "y": 260,
-    "wires": [
-      [
-        "delay_before_retry"
-      ]
-    ]
-  },
-  {
-    "id": "delay_before_retry",
-    "type": "delay",
-    "z": "flow1",
-    "name": "Delay before retry",
-    "pauseType": "delayv",
-    "timeout": "5",
-    "timeoutUnits": "seconds",
-    "rate": "1",
-    "nbRateUnits": "second",
-    "rateUnits": "second",
-    "randomFirst": "1",
-    "randomLast": "5",
-    "randomUnits": "seconds",
-    "drop": false,
-    "allowrate": false,
-    "x": 790,
-    "y": 260,
-    "wires": [
-      [
-        "retry_to_http"
-      ]
-    ]
-  },
-  {
-    "id": "retry_to_http",
-    "type": "link out",
-    "z": "flow1",
-    "name": "",
-    "links": [],
-    "x": 1030,
-    "y": 260,
-    "wires": []
-  }
+    {
+        "id": "afef7fa2637a5035",
+        "type": "tab",
+        "label": "Fluxo 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "http_in_r700",
+        "type": "http in",
+        "z": "afef7fa2637a5035",
+        "name": "R700 Webhook In",
+        "url": "/impinj",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "extract_body",
+                "send_r700_ok"
+            ]
+        ]
+    },
+    {
+        "id": "extract_body",
+        "type": "change",
+        "z": "afef7fa2637a5035",
+        "name": "msg.payload = req.body",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "req.body",
+                "tot": "msg"
+            }
+        ],
+        "x": 380,
+        "y": 120,
+        "wires": [
+            [
+                "split_events"
+            ]
+        ]
+    },
+    {
+        "id": "split_events",
+        "type": "split",
+        "z": "afef7fa2637a5035",
+        "name": "Split array of events",
+        "splt": "1",
+        "spltType": "len",
+        "arraySplt": 1,
+        "stream": false,
+        "addname": "",
+        "x": 620,
+        "y": 120,
+        "wires": [
+            [
+                "process_event"
+            ]
+        ]
+    },
+    {
+        "id": "process_event",
+        "type": "function",
+        "z": "afef7fa2637a5035",
+        "name": "Transform → 3rd Party Payload",
+        "func": "// Extract fields\nlet event = msg.payload;\n\n// Time selection\nlet isoTime = event?.tagInventoryEvent?.lastSeenTime || event?.timestamp || new Date().toISOString();\nlet timeMs = Date.parse(isoTime);\nif (isNaN(timeMs)) timeMs = Date.now();\n\n// Construct payload exactly as required\nmsg.payload = {\n    attributes: {\n        time: isoTime\n    },\n    event_type_uid: \"ed857b63-e1ef-4aa5-911e-c453408708e4\",\n    camera_id: event.hostname,   // Reader hostname\n    time_ms: timeMs\n};\n\n// Prepare headers\nmsg.headers = {\n    \"content-type\": \"application/json\",\n    \"x-api-auth\": process.env.EXTERNAL_API_KEY  // Must be set in Node-RED env\n};\n\n// Store retry count\nmsg.retry = msg.retry || 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 930,
+        "y": 120,
+        "wires": [
+            [
+                "post_verkada"
+            ]
+        ]
+    },
+    {
+        "id": "post_verkada",
+        "type": "http request",
+        "z": "afef7fa2637a5035",
+        "name": "POST → 3rd Party API",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://api.verkada.com/cameras/v1/video_tagging/event",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": true,
+        "x": 1230,
+        "y": 120,
+        "wires": [
+            [
+                "log_success"
+            ]
+        ]
+    },
+    {
+        "id": "log_success",
+        "type": "debug",
+        "z": "afef7fa2637a5035",
+        "name": "Success → Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1500,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "send_r700_ok",
+        "type": "http response",
+        "z": "afef7fa2637a5035",
+        "name": "Ack to R700 (200)",
+        "statusCode": "",
+        "headers": {},
+        "x": 370,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "catch_errors",
+        "type": "catch",
+        "z": "afef7fa2637a5035",
+        "name": "Catch errors",
+        "scope": [
+            "post_verkada"
+        ],
+        "uncaught": false,
+        "x": 240,
+        "y": 260,
+        "wires": [
+            [
+                "retry_logic"
+            ]
+        ]
+    },
+    {
+        "id": "retry_logic",
+        "type": "function",
+        "z": "afef7fa2637a5035",
+        "name": "Retry w/ exponential backoff",
+        "func": "let retry = msg.retry || 0;\nretry++;\n\nif (retry > 5) {\n    node.error(\"Retry limit exceeded\", msg);\n    return null; // Stop retrying\n}\n\nmsg.retry = retry;\n\nlet delay = Math.pow(2, retry) * 1000; // 2s, 4s, 8s, 16s, 32s\nmsg.delay = delay;\n\nnode.warn(`Retry #${retry} in ${delay}ms`);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 510,
+        "y": 260,
+        "wires": [
+            [
+                "delay_before_retry"
+            ]
+        ]
+    },
+    {
+        "id": "delay_before_retry",
+        "type": "delay",
+        "z": "afef7fa2637a5035",
+        "name": "Delay before retry",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "second",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 790,
+        "y": 260,
+        "wires": [
+            [
+                "retry_to_http"
+            ]
+        ]
+    },
+    {
+        "id": "retry_to_http",
+        "type": "link out",
+        "z": "afef7fa2637a5035",
+        "name": "",
+        "links": [],
+        "x": 1030,
+        "y": 260,
+        "wires": []
+    }
 ]

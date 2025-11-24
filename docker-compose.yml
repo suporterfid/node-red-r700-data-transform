@@ -1,14 +1,13 @@
-version: "3.9"
-
+version: "3.7"
 services:
-  nodered:
-    build: .
+  node-red:
     container_name: nodered-r700
-    restart: unless-stopped
-    ports:
-      - "1880:1880"
+    image: nodered/node-red:latest
     environment:
       - TZ=America/Sao_Paulo
       - EXTERNAL_API_KEY=${EXTERNAL_API_KEY}
+    restart: unless-stopped
+    ports:
+      - "1880:1880"
     volumes:
       - ./data:/data
