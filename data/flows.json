@@ -1,0 +1,90 @@
+[
+    {
+        "id": "r700-data-transform-flow",
+        "type": "tab",
+        "label": "R700 Data Transform",
+        "disabled": false,
+        "info": "Flow for processing and transforming R700 RFID reader data"
+    },
+    {
+        "id": "http-in",
+        "type": "http in",
+        "z": "r700-data-transform-flow",
+        "name": "R700 Data Input",
+        "url": "/r700/data",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "parse-json"
+            ]
+        ]
+    },
+    {
+        "id": "parse-json",
+        "type": "json",
+        "z": "r700-data-transform-flow",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 310,
+        "y": 100,
+        "wires": [
+            [
+                "transform-data"
+            ]
+        ]
+    },
+    {
+        "id": "transform-data",
+        "type": "function",
+        "z": "r700-data-transform-flow",
+        "name": "Transform R700 Data",
+        "func": "// Transform R700 RFID data\n// Extract relevant fields from R700 reader data\n\nvar transformed = {\n    timestamp: new Date().toISOString(),\n    reader_id: msg.payload.reader_id || 'unknown',\n    tags: []\n};\n\nif (msg.payload.tags && Array.isArray(msg.payload.tags)) {\n    transformed.tags = msg.payload.tags.map(tag => ({\n        epc: tag.epc || '',\n        rssi: tag.rssi || 0,\n        antenna: tag.antenna || 1,\n        read_count: tag.read_count || 1,\n        first_seen: tag.first_seen || transformed.timestamp,\n        last_seen: tag.last_seen || transformed.timestamp\n    }));\n}\n\nmsg.payload = transformed;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 100,
+        "wires": [
+            [
+                "http-response",
+                "debug"
+            ]
+        ]
+    },
+    {
+        "id": "http-response",
+        "type": "http response",
+        "z": "r700-data-transform-flow",
+        "name": "Send Response",
+        "statusCode": "200",
+        "headers": {},
+        "x": 730,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "debug",
+        "type": "debug",
+        "z": "r700-data-transform-flow",
+        "name": "Debug Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 730,
+        "y": 120,
+        "wires": []
+    }
+]
