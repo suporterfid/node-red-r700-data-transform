@@ -1,0 +1,84 @@
+<svg width="900" height="360" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: system-ui, sans-serif; font-size:18px; font-weight:600; fill:#222; }
+    .label { font-family: system-ui, sans-serif; font-size:13px; fill:#222; }
+    .small { font-family: system-ui, sans-serif; font-size:11px; fill:#555; }
+    .lifeline { stroke:#555; stroke-width:1.2; stroke-dasharray:4 4; }
+    .box { fill:#fdfdfd; stroke:#333; stroke-width:1.4; rx:8; ry:8; }
+    .arrow { stroke:#333; stroke-width:1.4; marker-end:url(#arrowhead); fill:none; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="9" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="24" text-anchor="middle" class="title">
+    Sequence – R700 → Node-RED → 3rd Party
+  </text>
+
+  <!-- Lifeline headers -->
+  <rect x="80" y="40" width="150" height="34" class="box"/>
+  <text x="155" y="62" text-anchor="middle" class="label">Impinj R700</text>
+
+  <rect x="380" y="40" width="150" height="34" class="box"/>
+  <text x="455" y="62" text-anchor="middle" class="label">Node-RED</text>
+
+  <rect x="680" y="40" width="150" height="34" class="box"/>
+  <text x="755" y="62" text-anchor="middle" class="label">3rd Party</text>
+
+  <!-- Lifelines -->
+  <line x1="155" y1="74" x2="155" y2="330" class="lifeline"/>
+  <line x1="455" y1="74" x2="455" y2="330" class="lifeline"/>
+  <line x1="755" y1="74" x2="755" y2="330" class="lifeline"/>
+
+  <!-- Messages -->
+  <!-- 1: Tag read (internal) -->
+  <text x="155" y="95" text-anchor="middle" class="small">1. Tag read</text>
+
+  <!-- 2: R700 → Node-RED -->
+  <line x1="155" y1="120" x2="455" y2="120" class="arrow"/>
+  <text x="305" y="112" text-anchor="middle" class="small">
+    2. Webhook / MQTT: readerEvent[]
+  </text>
+
+  <!-- 3: Node-RED transforms -->
+  <rect x="420" y="130" width="70" height="40" class="box"/>
+  <text x="455" y="152" text-anchor="middle" class="small">
+    3. Transform to
+  </text>
+  <text x="455" y="166" text-anchor="middle" class="small">
+    {attributes, time_ms, camera_id}
+  </text>
+
+  <!-- 4: Node-RED → 3rd Party -->
+  <line x1="455" y1="190" x2="755" y2="190" class="arrow"/>
+  <text x="605" y="182" text-anchor="middle" class="small">
+    4. HTTP POST /event (JSON + x-api-key)
+  </text>
+
+  <!-- 5: 3rd Party → Node-RED -->
+  <line x1="755" y1="220" x2="455" y2="220" class="arrow"/>
+  <text x="605" y="212" text-anchor="middle" class="small">
+    5. 2xx response / status
+  </text>
+
+  <!-- 6: Node-RED log -->
+  <rect x="420" y="230" width="70" height="34" class="box"/>
+  <text x="455" y="252" text-anchor="middle" class="small">
+    6. Log result
+  </text>
+
+  <!-- 7: Node-RED → R700 (webhook ack) -->
+  <line x1="455" y1="280" x2="155" y2="280" class="arrow"/>
+  <text x="305" y="272" text-anchor="middle" class="small">
+    7. HTTP 200 OK (webhook)
+  </text>
+
+  <!-- Note -->
+  <text x="455" y="310" text-anchor="middle" class="small">
+    For MQTT, step 7 is not used (no HTTP response path).
+  </text>
+</svg>
