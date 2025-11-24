@@ -116,6 +116,18 @@ The `data` directory is mounted as a volume, allowing you to:
 - Persist Node-RED configuration
 - Add custom nodes or libraries
 
+**Note on Permissions:** The container runs as the `node-red` user (UID 1000). If you encounter permission issues on Linux/macOS, ensure the `data` directory is readable by the container:
+
+```bash
+chmod -R 755 data/
+```
+
+For more restrictive environments, you may need to adjust ownership:
+
+```bash
+chown -R 1000:1000 data/
+```
+
 ## Customization
 
 ### Adding Additional Node-RED Nodes
