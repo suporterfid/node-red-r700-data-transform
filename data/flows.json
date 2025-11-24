@@ -76,7 +76,7 @@
     "id": "post_verkada",
     "type": "http request",
     "z": "flow1",
-    "name": "POST → Verkada Helix API",
+    "name": "POST → 3rd Party API",
     "method": "POST",
     "ret": "obj",
     "paytoqs": "ignore",
