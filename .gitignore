@@ -7,3 +7,4 @@ data/flows_cred.json
 data/package.json
 data/settings.js
 data/.config.nodes.json
+data/.flows_cred.json.backup

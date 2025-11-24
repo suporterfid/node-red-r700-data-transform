@@ -16,12 +16,13 @@
         "method": "post",
         "upload": false,
         "swaggerDoc": "",
-        "x": 150,
-        "y": 120,
+        "x": 110,
+        "y": 80,
         "wires": [
             [
-                "extract_body",
-                "send_r700_ok"
+                "send_r700_ok",
+                "5191c79f59fa6ebb",
+                "e8f19689a80244e8"
             ]
         ]
     },
@@ -39,8 +40,8 @@
                 "tot": "msg"
             }
         ],
-        "x": 380,
-        "y": 120,
+        "x": 490,
+        "y": 160,
         "wires": [
             [
                 "split_events"
@@ -57,8 +58,8 @@
         "arraySplt": 1,
         "stream": false,
         "addname": "",
-        "x": 620,
-        "y": 120,
+        "x": 760,
+        "y": 160,
         "wires": [
             [
                 "process_event"
@@ -70,11 +71,15 @@
         "type": "function",
         "z": "afef7fa2637a5035",
         "name": "Transform → 3rd Party Payload",
-        "func": "// Extract fields\nlet event = msg.payload;\n\n// Time selection\nlet isoTime = event?.tagInventoryEvent?.lastSeenTime || event?.timestamp || new Date().toISOString();\nlet timeMs = Date.parse(isoTime);\nif (isNaN(timeMs)) timeMs = Date.now();\n\n// Construct payload exactly as required\nmsg.payload = {\n    attributes: {\n        time: isoTime\n    },\n    event_type_uid: \"ed857b63-e1ef-4aa5-911e-c453408708e4\",\n    camera_id: event.hostname,   // Reader hostname\n    time_ms: timeMs\n};\n\n// Prepare headers\nmsg.headers = {\n    \"content-type\": \"application/json\",\n    \"x-api-auth\": process.env.EXTERNAL_API_KEY  // Must be set in Node-RED env\n};\n\n// Store retry count\nmsg.retry = msg.retry || 0;\nreturn msg;",
+        "func": "let apiKey = env.get(\"EXTERNAL_API_KEY\");\n\n// Extract fields\nlet event = msg.payload;\n\n// Time selection\nlet isoTime = event?.tagInventoryEvent?.lastSeenTime || event?.timestamp || new Date().toISOString();\nlet timeMs = Date.parse(isoTime);\nif (isNaN(timeMs)) timeMs = Date.now();\n\n// Construct payload exactly as required\nmsg.payload = {\n    attributes: {\n        time: isoTime\n    },\n    event_type_uid: \"ed857b63-e1ef-4aa5-911e-c453408708e4\",\n    camera_id: event.hostname,   // Reader hostname\n    time_ms: timeMs\n};\n\n// Prepare headers\nmsg.headers = {\n    \"content-type\": \"application/json\",\n    \"x-api-auth\": apiKey  // Must be set in Node-RED env\n};\n\n// Store retry count\nmsg.retry = msg.retry || 0;\nreturn msg;",
         "outputs": 1,
+        "timeout": "",
         "noerr": 0,
-        "x": 930,
-        "y": 120,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 160,
         "wires": [
             [
                 "post_verkada"
@@ -87,16 +92,18 @@
         "z": "afef7fa2637a5035",
         "name": "POST → 3rd Party API",
         "method": "POST",
-        "ret": "obj",
+        "ret": "bin",
         "paytoqs": "ignore",
-        "url": "https://api.verkada.com/cameras/v1/video_tagging/event",
+        "url": "https://webhook.site/3f57a0c0-8542-454f-8a59-f43abba1566d",
         "tls": "",
         "persist": false,
         "proxy": "",
+        "insecureHTTPParser": false,
         "authType": "",
-        "senderr": true,
-        "x": 1230,
-        "y": 120,
+        "senderr": false,
+        "headers": [],
+        "x": 1360,
+        "y": 200,
         "wires": [
             [
                 "log_success"
@@ -124,8 +131,8 @@
         "name": "Ack to R700 (200)",
         "statusCode": "",
         "headers": {},
-        "x": 370,
-        "y": 180,
+        "x": 390,
+        "y": 220,
         "wires": []
     },
     {
@@ -157,12 +164,33 @@
         "y": 260,
         "wires": [
             [
-                "delay_before_retry"
+                "5198d30ba26760d7"
             ]
         ]
     },
     {
-        "id": "delay_before_retry",
+        "id": "5191c79f59fa6ebb",
+        "type": "function",
+        "z": "afef7fa2637a5035",
+        "name": "verify payload",
+        "func": "// If payload is missing entirely\nif (msg.payload === null || msg.payload === undefined) {\n    return null;   // stop flow\n}\n\n// If payload is an empty string\nif (typeof msg.payload === \"string\" && msg.payload.trim() === \"\") {\n    return null;   // stop flow\n}\n\n// If payload is an empty array\nif (Array.isArray(msg.payload) && msg.payload.length === 0) {\n    return null;   // stop flow\n}\n\n// If payload is an empty object\nif (typeof msg.payload === \"object\" && !Array.isArray(msg.payload)) {\n    if (Object.keys(msg.payload).length === 0) {\n        return null;   // stop flow\n    }\n}\n\n// Otherwise, payload is valid → continue\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 80,
+        "wires": [
+            [
+                "extract_body",
+                "807af1b5df02c36a"
+            ]
+        ]
+    },
+    {
+        "id": "5198d30ba26760d7",
         "type": "delay",
         "z": "afef7fa2637a5035",
         "name": "Delay before retry",
@@ -170,7 +198,7 @@
         "timeout": "5",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "second",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -178,22 +206,46 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 790,
+        "x": 830,
         "y": 260,
         "wires": [
             [
-                "retry_to_http"
+                "post_verkada"
             ]
         ]
     },
     {
-        "id": "retry_to_http",
-        "type": "link out",
+        "id": "e8f19689a80244e8",
+        "type": "debug",
         "z": "afef7fa2637a5035",
-        "name": "",
-        "links": [],
-        "x": 1030,
-        "y": 260,
+        "name": "debug Webhook",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 360,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "807af1b5df02c36a",
+        "type": "debug",
+        "z": "afef7fa2637a5035",
+        "name": "debug Payload Verifier",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 80,
         "wires": []
     }
 ]
