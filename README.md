@@ -1,6 +1,6 @@
 # 🚀 Impinj R700 → Node-RED → 3rd Party Integration
 
-A reference architecture and Dockerized Node-RED project to receive RFID events from an **Impinj R700** reader (via **Webhook** or **MQTT**), normalize the payload, and forward events to any **3rd Party HTTP API** using a secure API key.
+A reference architecture and Dockerized Node-RED project to receive RFID events from an **Impinj R700** reader (via **Webhook** or it can be customized for **MQTT**), normalize the payload, and forward events to any **3rd Party HTTP API** using a secure API key.
 
 This project includes:
 
@@ -30,7 +30,21 @@ This project includes:
 
 ---
 
-# 🖼 Architecture Diagrams
+# 🧩 Prerequisites
+
+To run this project, you must have one of the following installed:
+
+- Docker Engine (e.g., on Linux) with Docker Compose
+- Docker Desktop (on Windows or macOS), which includes Docker Compose
+
+You can verify Docker Compose availability by running:
+```bash
+docker compose version
+```
+
+---
+
+# 🖼️ Architecture Diagrams
 
 ## **High-Level Architecture**
 
@@ -162,6 +176,8 @@ sudo apt update
 sudo apt install docker.io docker-compose
 ```
 
+Or install Docker Desktop on Windows/macOS.
+
 ---
 
 ## 2. Clone the Repository
@@ -263,4 +279,3 @@ Ideas for improvements:
 * Add support for batch-mode forwarding
 
 ---
-
